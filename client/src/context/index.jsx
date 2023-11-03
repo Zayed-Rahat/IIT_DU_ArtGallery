@@ -7,20 +7,20 @@ import { EditionMetadataWithOwnerOutputSchema } from '@thirdweb-dev/sdk';
 const StateContext = createContext();
 
 export const StateContextProvider = ({ children }) => {
-  const { contract } = useContract('0x9d845e162cdC7C2d6E81B0a30FfDb545EBC9b2F5');
+  const { contract } = useContract('0x6d6f781AF739BbB56AD61c3254069ECf874DC7dd');
   const { mutateAsync: CreateCommunity} = useContractWrite(contract, 'createCommunity');
 
   const address = useAddress();
   const connect = useMetamask();
 
-  const publishCampaign = async (form) => {
+  const createCommunity = async (form , tokenId) => {
     try {
-      const data = await createCampaign({
+      const data = await CreateCommunity({
 				args: [
 					address, // owner
 					form.title, // title
 					form.description, // description
-          
+          tokenId
 				],
 			});
 
@@ -30,8 +30,8 @@ export const StateContextProvider = ({ children }) => {
     }
   }
 
-  const getCampaigns = async () => {
-    const campaigns = await contract.call('getCampaigns');
+  const getCommunities = async () => {
+    const communities = await contract.call('getCampaigns');
 
     const parsedCampaings = campaigns.map((campaign, i) => ({
       owner: campaign.owner,

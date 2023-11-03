@@ -7,9 +7,9 @@ export const navlinks = [
     link: '/',
   },
   {
-    name: 'sell',
+    name: 'createCampaign',
     imgUrl: createCampaign,
-    link: '/sell',
+    link: '/createCampaign',
   },
   {
     name: 'profile',

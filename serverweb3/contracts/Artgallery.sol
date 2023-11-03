@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: GPL-3.0
+// SPDX-License-Identifier: MIT
 
 pragma solidity ^0.8.17;
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
@@ -38,18 +38,15 @@ contract ArtBlock is ERC20 {
         _mint(msg.sender, amount);
     }
 
-    function createCommunity(string memory title, string memory description)
-        public
-    {
+    function createCommunity(
+        string memory title,
+        string memory description
+    ) public {
         require(balanceOf(msg.sender) >= Y, "Not enough ABX tokens");
         _burn(msg.sender, Y);
         uint256 tokenId = totalSupply();
         _mint(msg.sender, tokenId);
         communities[msg.sender].push(Community(title, description, tokenId));
-    }
-
-    function getCommunities() public view returns (Community[] memory) {
-        return communities[msg.sender];
     }
 
     function publishProduct(
@@ -69,6 +66,10 @@ contract ArtBlock is ERC20 {
         );
     }
 
+    function getProducts() public view returns (Product[] memory) {
+        return products[msg.sender];
+    }
+
     function voteOnProduct(
         address creator,
         uint256 productId,
@@ -76,14 +77,6 @@ contract ArtBlock is ERC20 {
     ) public {
         uint256 weight = balanceOf(msg.sender);
         votes[creator][productId].push(Vote(isUpvote, weight));
-    }
-
-    function getVotes(address creator, uint256 productId)
-        public
-        view
-        returns (Vote[] memory)
-    {
-        return votes[creator][productId];
     }
 
     function finalizeVotes(address creator, uint256 productId) public {

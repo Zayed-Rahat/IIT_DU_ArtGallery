@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: GPL-3.0
 
 pragma solidity ^0.8.17;
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
@@ -48,6 +48,10 @@ contract ArtBlock is ERC20 {
         communities[msg.sender].push(Community(title, description, tokenId));
     }
 
+    function getCommunities() public view returns (Community[] memory) {
+        return communities[msg.sender];
+    }
+
     function publishProduct(
         string memory title,
         string memory description,
@@ -72,6 +76,14 @@ contract ArtBlock is ERC20 {
     ) public {
         uint256 weight = balanceOf(msg.sender);
         votes[creator][productId].push(Vote(isUpvote, weight));
+    }
+
+    function getVotes(address creator, uint256 productId)
+        public
+        view
+        returns (Vote[] memory)
+    {
+        return votes[creator][productId];
     }
 
     function finalizeVotes(address creator, uint256 productId) public {

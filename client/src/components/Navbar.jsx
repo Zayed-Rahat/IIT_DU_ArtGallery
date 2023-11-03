@@ -54,14 +54,6 @@ const Navbar = () => {
       </ul>
   
       <div className="mx-4">
-      {address && (
-      <CustomButton
-        btnType="button"
-        title="Buy Token"
-        styles="bg-[#8c6dfd]"
-        handleClick={() => navigate("buy-token")}
-      />
-    )}
         <CustomButton
           btnType="button"
           title={address ? "Create Community" : "Connect"}

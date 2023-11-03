@@ -1,7 +1,6 @@
 import React, { useState, useEffect  } from 'react'
 import { useNavigate } from 'react-router-dom';
 import { ethers } from 'ethers';
-import Web3 from 'web3';
 import { useStateContext } from '../context';
 import { money } from '../assets';
 import { CustomButton, FormField, Loader } from '../components';
@@ -9,62 +8,26 @@ import { CustomButton, FormField, Loader } from '../components';
 const CreateCommunity = () => {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
-  const { createCampaign } = useStateContext();
+  const { createCommunity } = useStateContext();
   const [form, setForm] = useState({
     title: '',
     description: '',
-    tokenSymbol: '',
-    tokenAmount: '',
-    creatorAddress: '',
   });
 
-
-  useEffect(() => {
-    // Connect to the user's Metamask wallet
-    const connectToMetamask = async () => {
-      if (window.ethereum) {
-        try {
-          // Request access to the user's accounts
-          await window.ethereum.request({ method: 'eth_requestAccounts' });
-          const web3 = new Web3(window.ethereum);
-
-          // Retrieve the token symbol and token amount from the user's wallet
-          const tokenContract = new web3.eth.Contract(ERC20_ABI, tokenContractAddress);
-          const tokenSymbol = await tokenContract.methods.symbol().call();
-          const tokenAmount = await tokenContract.methods.balanceOf(web3.eth.defaultAccount).call();
-
-          // Retrieve the creator address from the user's wallet
-          const creatorAddress = web3.eth.defaultAccount;
-
-          // Update the form state with the retrieved values
-          setForm((prevForm) => ({
-            ...prevForm,
-            tokenSymbol,
-            tokenAmount,
-            creatorAddress,
-          }));
-        } catch (error) {
-          console.error('Error connecting to Metamask:', error);
-        }
-      } else {
-        console.error('Metamask not detected');
-      }
-    };
-
-    connectToMetamask();
-  }, []);
-
-  const handleFormFieldChange = (fieldName, event) => {
-    setForm((prevForm) => ({
-      ...prevForm,
-      [fieldName]: event.target.value,
-    }));
-  };
-
+  const handleFormFieldChange = (fieldName, e) => {
+    setForm({ ...form, [fieldName]: e.target.value })
+  }
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-  }
+    try {
+      await createCommunity(form);
+      console.log("Community created successfully");
+    } catch (error) {
+      console.log("Error creating community", error);
+    }
+   }
+   
 
   return (
     <div className="bg-[#1c1c24] flex justify-center items-center flex-col rounded-[10px] sm:p-10 p-4">
@@ -91,10 +54,6 @@ const CreateCommunity = () => {
             value={form.description}
             handleChange={(e) => handleFormFieldChange('description', e)}
           />
-
-      <p>Token Symbol: {form.tokenSymbol}</p>
-      <p>Token Amount: {form.tokenAmount}</p>
-      <p>Creator Address: {form.creatorAddress}</p>
 
         <div className="flex flex-wrap gap-[40px]">
          

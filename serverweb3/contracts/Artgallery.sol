@@ -3,7 +3,6 @@
 pragma solidity ^0.8.17;
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
-//import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 
 contract ArtBlock is ERC20 {
     uint256 public constant Y = 1; // Y amount of ABX tokens
@@ -18,6 +17,7 @@ contract ArtBlock is ERC20 {
     struct Product {
         string title;
         string description;
+        string image;
         uint256 tokenId;
         uint256 stakeAmount;
         bool isExclusive;
@@ -43,21 +43,30 @@ contract ArtBlock is ERC20 {
         _mint(msg.sender, amount);
     }
 
-    function createCommunity(
-        string memory title,
-        string memory description
-    ) public {
-        require(balanceOf(msg.sender) >= Y, "Not enough ABX tokens");
-        _burn(msg.sender, Y);
-        uint256 tokenId = totalSupply();
-        _mint(msg.sender, tokenId);
-        communities[msg.sender].push(Community(title, description, tokenId));
+function createCommunity(
+   string memory title,
+   string memory description
+) public {
+   uint256 balance = balanceOf(msg.sender);
+   require(balance >= Y/10000000000000000000, "Not enough ABX tokens");
+   uint256 amountToBurn = balance >= Y ? Y : balance;
+   _burn(msg.sender, amountToBurn);
+   uint256 tokenId = totalSupply();
+   _mint(msg.sender, tokenId);
+   communities[msg.sender].push(Community(title, description, tokenId));
+
+}
+
+function getCommunities() public view returns (Community[] memory) {
+        return communities[msg.sender];
     }
 
     function publishProduct(
         string memory title,
         string memory description,
+        string memory image,
         bool isExclusive
+
     ) public {
         require(
             balanceOf(msg.sender) >= Z,
@@ -68,10 +77,10 @@ contract ArtBlock is ERC20 {
 
         _mint(msg.sender, tokenId);
         products[msg.sender].push(
-            Product(title, description, tokenId, Z, isExclusive, false)
+            Product(title, description, image, tokenId, Z, isExclusive, false)
         );
         prod[id].push(
-            Product(title, description, tokenId, Z, isExclusive, false)
+            Product(title, description, image, tokenId, Z, isExclusive, false)
         );
         id++;
     }

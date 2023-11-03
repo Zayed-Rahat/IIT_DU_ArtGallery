@@ -1,30 +1,31 @@
 import React, { useState, useEffect } from 'react'
 
-import { DisplayCampaigns } from '../components';
+import { DisplayCommunities } from '../components';
 import { useStateContext } from '../context'
 
 const Profile = () => {
   const [isLoading, setIsLoading] = useState(false);
-  const [campaigns, setCampaigns] = useState([]);
+  const [communities, setCommunities] = useState([]);
 
-  const { address, contract, getUserCampaigns } = useStateContext();
+  const { address, contract, getCommunities } = useStateContext();
 
-  const fetchCampaigns = async () => {
+  const fetchCommunities = async () => {
     setIsLoading(true);
-    const data = await getUserCampaigns();
-    setCampaigns(data);
+    const data = await getCommunities();
+    console.log(data)
+    setCommunities(data);
     setIsLoading(false);
   }
 
   useEffect(() => {
-    if(contract) fetchCampaigns();
+    if(contract) fetchCommunities();
   }, [address, contract]);
 
   return (
-    <DisplayCampaigns 
-      title="All Campaigns"
+    <DisplayCommunities 
+      title="All Communities"
       isLoading={isLoading}
-      campaigns={campaigns}
+      communities={communities}
     />
   )
 }

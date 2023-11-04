@@ -3,9 +3,17 @@ import { useNavigate } from 'react-router-dom';
 import { v4 as uuidv4 } from "uuid";
 import FundCard from './FundCard';
 import { loader } from '../assets';
+import { useContractRead } from '@thirdweb-dev/react';
 
-const DisplayCommunities = ({ title, isLoading, contract, communities }) => {
+
+const DisplayCommunities = ({ title, isLoading, contract }) => {
   const navigate = useNavigate();
+
+  const {  data : communities } = useContractRead(contract, "getCommunities");
+
+
+  console.log(communities)
+
   
   // const handleNavigate = (campaign) => {
   //   navigate(`/campaign-details/${campaign.title}`, { state: campaign })

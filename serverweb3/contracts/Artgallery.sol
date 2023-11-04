@@ -1,23 +1,35 @@
 // SPDX-License-Identifier: MIT
-
 pragma solidity ^0.8.17;
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
+//import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
+contract CommunityToken is ERC20 {
+    constructor(string memory name, string memory symbol) ERC20(name, symbol) {
+        _mint(msg.sender, 10000 * (10**uint256(decimals())));
+    }
+
+    function mint(address to, uint256 amount) public {
+        _mint(to, amount);
+    }
+
+}
 
 contract ArtBlock is ERC20 {
     uint256 public constant Y = 1; // Y amount of ABX tokens
-    uint256 public constant Z = 5; // Z amount of community native tokens
     uint256 public id = 0;
+    CommunityToken public communityToken;
+    
     struct Community {
         string title;
         string description;
         uint256 tokenId;
+        uint256 requiredTokens; 
     }
 
     struct Product {
         string title;
         string description;
-        string image;
+        string  image;
         uint256 tokenId;
         uint256 stakeAmount;
         bool isExclusive;
@@ -33,6 +45,11 @@ contract ArtBlock is ERC20 {
     mapping(address => Product[]) public products;
     mapping(uint256 => Product[]) public prod;
     mapping(address => mapping(uint256 => Vote[])) public votes;
+    mapping(address => bool) public isTokenBuyer;
+    mapping(address => uint256) public buytoken;
+    mapping(address => bool) public isCreator;
+    mapping(address => bool) public boughtNativeToken;
+    mapping(address => uint256) public boughtTokenAmount;
 
     //mapping(uint256 => uint256) public productTokens;
 
@@ -40,25 +57,44 @@ contract ArtBlock is ERC20 {
 
     function buyTokens(uint256 amount) public payable {
         require(msg.value == amount * 1 ether, "Incorrect Ether value");
+        buytoken[msg.sender] = msg.value;
+        isTokenBuyer[msg.sender] = true;
         _mint(msg.sender, amount);
     }
 
-function createCommunity(
-   string memory title,
-   string memory description
-) public {
-   uint256 balance = balanceOf(msg.sender);
-   require(balance >= Y/10000000000000000000, "Not enough ABX tokens");
-   uint256 amountToBurn = balance >= Y ? Y : balance;
-   _burn(msg.sender, amountToBurn);
-   uint256 tokenId = totalSupply();
-   _mint(msg.sender, tokenId);
-   communities[msg.sender].push(Community(title, description, tokenId));
+    function createCommunity(
+        string memory title,
+        string memory description,
+        uint256 requiredTokens
+    ) public {
+        require(
+            isTokenBuyer[msg.sender],
+            "Please Buy ABX token to create Community"
+        );
+        require(balanceOf(msg.sender) >= Y, "Not enough ABX tokens");
+        _burn(msg.sender, Y);
+        uint256 tokenId = totalSupply();
+        _mint(msg.sender, tokenId);
+        communities[msg.sender].push(
+            Community(title, description, tokenId, requiredTokens)
+        );
+        isCreator[msg.sender] = true;
+    }
 
-}
-
-function getCommunities() public view returns (Community[] memory) {
+    function getCommunities() public view returns (Community[] memory) {
         return communities[msg.sender];
+    }
+
+    //event Debug(string message, uint256 value);
+
+    function buynativeToken(uint256 amount) public payable {
+  
+        require(msg.value == amount * 1 ether, "Incorrect Ether value");
+
+        require(isTokenBuyer[msg.sender], "Buy first ABX token");
+        communityToken.mint(msg.sender, amount);
+        boughtTokenAmount[msg.sender] = amount;
+        boughtNativeToken[msg.sender] = true;
     }
 
     function publishProduct(
@@ -66,21 +102,39 @@ function getCommunities() public view returns (Community[] memory) {
         string memory description,
         string memory image,
         bool isExclusive
-
     ) public {
         require(
-            balanceOf(msg.sender) >= Z,
+            boughtNativeToken[msg.sender],
+            "You have to buy Native Token First"
+        );
+        Community memory community = communities[msg.sender][0]; 
+        require(
+            communityToken.balanceOf(msg.sender) >= community.requiredTokens,
             "Not enough community native tokens"
         );
-        _burn(msg.sender, Z);
         uint256 tokenId = totalSupply();
-
         _mint(msg.sender, tokenId);
         products[msg.sender].push(
-            Product(title, description, image, tokenId, Z, isExclusive, false)
+            Product(
+                title,
+                description,
+                image,
+                tokenId,
+                community.requiredTokens,
+                isExclusive,
+                false
+            )
         );
         prod[id].push(
-            Product(title, description, image, tokenId, Z, isExclusive, false)
+            Product(
+                title,
+                description,
+                image,
+                tokenId,
+                community.requiredTokens,
+                isExclusive,
+                false
+            )
         );
         id++;
     }
@@ -94,18 +148,33 @@ function getCommunities() public view returns (Community[] memory) {
         uint256 productId,
         bool isUpvote
     ) public {
-        uint256 weight = balanceOf(msg.sender);
+        require(
+            !isCreator[msg.sender],
+            "Creators can't vote on their own product"
+        );
+        require(
+            boughtNativeToken[msg.sender],
+            "You have to buy Community Token first"
+        );
+        Community memory community = communities[creator][productId]; // Get the community of the product
+        require(
+            communityToken.balanceOf(msg.sender) >= community.requiredTokens,
+            "Not enough community native tokens to vote"
+        );
+        uint256 weight = communityToken.balanceOf(msg.sender);
         votes[creator][productId].push(Vote(isUpvote, weight));
     }
 
-    function getVotes(
-        address creator,
-        uint256 productId
-    ) public view returns (Vote[] memory) {
+    function getVotes(address creator, uint256 productId)
+        public
+        view
+        returns (Vote[] memory)
+    {
         return votes[creator][productId];
     }
 
     function finalizeVotes(address creator, uint256 productId) public {
+        require(isCreator[msg.sender], "only creators can finalize the vote ");
         uint256 totalWeight = 0;
         uint256 upvoteWeight = 0;
         for (uint256 i = 0; i < votes[creator][productId].length; i++) {
@@ -121,6 +190,7 @@ function getCommunities() public view returns (Community[] memory) {
             _mint(msg.sender, tokenId);
         } else {
             // Transfer staked tokens to community reserve
+            // IERC20(stakedTokenAddress).transferFrom(staker, communityReserveAddress, amount);
         }
     }
 
@@ -143,6 +213,7 @@ function getCommunities() public view returns (Community[] memory) {
         uint256 minPrice,
         uint256 duration
     ) public {
+        require(isCreator[msg.sender], "Only creator can call this function");
         require(
             prod[productId][0].isExclusive,
             "Only exclusive products can be auctioned"
@@ -192,9 +263,14 @@ function getCommunities() public view returns (Community[] memory) {
 
     function endAuction(uint256 auctionId) public view {
         Auction storage auction = auctions[auctionId];
+        require(isCreator[msg.sender], "Only creator can call this function");
         require(block.timestamp > auction.endTime, "Auction has not yet ended");
 
         // Transfer the product to the highest bidder
+        // address highestBidder = auction.highestBidder;
+        // Product memory product = auction.product;
         // Transfer the highest bid to the product creator
     }
+
+
 }

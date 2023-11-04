@@ -11,15 +11,23 @@ export const navlinks = [
     imgUrl: createCampaign,
     link: '/create-community',
   },
-  {
-    name: 'profile',
-    imgUrl: profile,
-    link: '/profile',
-  },
+ 
   // {
   //   name: 'logout',
   //   imgUrl: logout,
   //   link: '/',
   //   disabled: true,
   // },
+
+   {
+    name: 'addArt',
+    imgUrl: createCampaign,
+    link: '/add-art',
+  },
+
+  {
+    name: 'profile',
+    imgUrl: profile,
+    link: '/profile',
+  }
 ];

@@ -6,12 +6,7 @@ export const navlinks = [
     imgUrl: dashboard,
     link: '/',
   },
-  {
-    name: 'createCommunity',
-    imgUrl: createCampaign,
-    link: '/create-community',
-  },
- 
+  
   // {
   //   name: 'logout',
   //   imgUrl: logout,

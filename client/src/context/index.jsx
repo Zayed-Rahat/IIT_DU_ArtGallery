@@ -14,6 +14,8 @@ const web3 = new Web3(window.ethereum);
 export const StateContextProvider = ({ children }) => {
 const { contract } = useContract('0x7469bE2F42e603469D598DfB175e098a1375b4AF');
   const { mutateAsync: CreateCommunity} = useContractWrite(contract, 'createCommunity');
+  const { mutateAsync: PublishProduct} = useContractWrite(contract, 'publishProduct');
+
   // const {  data : GetCommunities } = useContractRead(contract, 'getCommunities');
 
   const address = useAddress();
@@ -25,6 +27,25 @@ const { contract } = useContract('0x7469bE2F42e603469D598DfB175e098a1375b4AF');
 				args: [
 					form.title, // title
 					form.description, // description
+				],
+			});
+
+      console.log("contract call success", data)
+    } catch (error) {
+      console.log("contract call failure", error)
+    }
+  }
+
+  const publishProduct = async (form) => {
+    try {
+      const data = await PublishProduct({
+				args: [
+          address,
+					form.title, // title
+					form.description, // description
+          form.image,
+          form.stakeAmount,
+          form.isExclusive,
 				],
 			});
 
@@ -94,6 +115,7 @@ const { contract } = useContract('0x7469bE2F42e603469D598DfB175e098a1375b4AF');
         contract,
         connect,
         createCommunity: createCommunity,
+        publishProduct: publishProduct,
         // getCommunities: getCommunities,
       }}
     >

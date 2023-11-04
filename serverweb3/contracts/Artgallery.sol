@@ -12,6 +12,12 @@ contract CommunityToken is ERC20 {
         _mint(to, amount);
     }
 
+    // function burn(address account, uint256 value) public {
+    //     if (account == address(0)) {
+    //         revert ERC20InvalidSender(address(0));
+    //     }
+    //     _update(account, address(0), value);
+    // }
 }
 
 contract ArtBlock is ERC20 {
@@ -29,7 +35,7 @@ contract ArtBlock is ERC20 {
     struct Product {
         string title;
         string description;
-        string  image;
+        string image;
         uint256 tokenId;
         uint256 stakeAmount;
         bool isExclusive;
@@ -55,6 +61,8 @@ contract ArtBlock is ERC20 {
 
     constructor() ERC20("ArtBlock", "ABX") {}
 
+    //Function to buy ABX token 
+
     function buyTokens(uint256 amount) public payable {
         require(msg.value == amount * 1 ether, "Incorrect Ether value");
         buytoken[msg.sender] = msg.value;
@@ -62,6 +70,7 @@ contract ArtBlock is ERC20 {
         _mint(msg.sender, amount);
     }
 
+      //Function to bCreate community
     function createCommunity(
         string memory title,
         string memory description,
@@ -78,14 +87,18 @@ contract ArtBlock is ERC20 {
         communities[msg.sender].push(
             Community(title, description, tokenId, requiredTokens)
         );
+      
         isCreator[msg.sender] = true;
     }
 
+        //Function to get the community list
     function getCommunities() public view returns (Community[] memory) {
         return communities[msg.sender];
     }
 
     //event Debug(string message, uint256 value);
+
+     //function tp buy Native token for a community
 
     function buynativeToken(uint256 amount) public payable {
   
@@ -96,7 +109,7 @@ contract ArtBlock is ERC20 {
         boughtTokenAmount[msg.sender] = amount;
         boughtNativeToken[msg.sender] = true;
     }
-
+    //function to publish product
     function publishProduct(
         string memory title,
         string memory description,
@@ -112,13 +125,14 @@ contract ArtBlock is ERC20 {
             communityToken.balanceOf(msg.sender) >= community.requiredTokens,
             "Not enough community native tokens"
         );
+        // communityToken.burn(msg.sender, community.requiredTokens);
         uint256 tokenId = totalSupply();
         _mint(msg.sender, tokenId);
         products[msg.sender].push(
             Product(
                 title,
                 description,
-                image,
+                image,                
                 tokenId,
                 community.requiredTokens,
                 isExclusive,
@@ -129,7 +143,7 @@ contract ArtBlock is ERC20 {
             Product(
                 title,
                 description,
-                image,
+                image,  
                 tokenId,
                 community.requiredTokens,
                 isExclusive,
@@ -138,11 +152,11 @@ contract ArtBlock is ERC20 {
         );
         id++;
     }
-
+     //functions to get products
     function getProducts() public view returns (Product[] memory) {
         return products[msg.sender];
     }
-
+      //functions to vote on product 
     function voteOnProduct(
         address creator,
         uint256 productId,
@@ -164,7 +178,7 @@ contract ArtBlock is ERC20 {
         uint256 weight = communityToken.balanceOf(msg.sender);
         votes[creator][productId].push(Vote(isUpvote, weight));
     }
-
+       //functions to get totalVote
     function getVotes(address creator, uint256 productId)
         public
         view
@@ -172,7 +186,7 @@ contract ArtBlock is ERC20 {
     {
         return votes[creator][productId];
     }
-
+     //functions to finalize vote
     function finalizeVotes(address creator, uint256 productId) public {
         require(isCreator[msg.sender], "only creators can finalize the vote ");
         uint256 totalWeight = 0;
@@ -205,7 +219,7 @@ contract ArtBlock is ERC20 {
         uint256 highestBid;
     }
     mapping(uint256 => Auction) public auctions;
-
+     //funciton to start the auction
     function startAuction(
         uint256 productId,
         uint256 startPrice,
@@ -231,7 +245,7 @@ contract ArtBlock is ERC20 {
             0
         );
     }
-
+          //function to get current price
     function getCurrentPrice(uint256 auctionId) public view returns (uint256) {
         Auction memory auction = auctions[auctionId];
         uint256 elapsedTime = block.timestamp - auction.startTime;
@@ -240,7 +254,8 @@ contract ArtBlock is ERC20 {
         return
             currentPrice >= auction.minPrice ? currentPrice : auction.minPrice;
     }
-
+       
+          //function to bid
     function bid(uint256 auctionId) public payable {
         Auction storage auction = auctions[auctionId];
         uint256 currentPrice = getCurrentPrice(auctionId);
@@ -260,6 +275,9 @@ contract ArtBlock is ERC20 {
         auction.highestBidder = msg.sender;
         auction.highestBid = msg.value;
     }
+    
+       
+          //function to endAuction
 
     function endAuction(uint256 auctionId) public view {
         Auction storage auction = auctions[auctionId];

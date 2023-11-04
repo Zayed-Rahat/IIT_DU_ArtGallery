@@ -1,8 +1,8 @@
 ## Deploying Contracts
 
-ThirdWeb -- https://thirdweb.com/sepolia/0x7469bE2F42e603469D598DfB175e098a1375b4AF
+ThirdWeb --  https://thirdweb.com/sepolia/0x7e2AF1056B742BbB90124670d2fb0Fc549e6889d
 
-Sepolia -- https://sepolia.etherscan.io/address/0x7469bE2F42e603469D598DfB175e098a1375b4AF
+Sepolia -- https://sepolia.etherscan.io/address/0x7e2AF1056B742BbB90124670d2fb0Fc549e6889d
 
 ## Documentations
 

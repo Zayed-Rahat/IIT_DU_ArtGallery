@@ -3,7 +3,6 @@ import React, { useContext, createContext } from 'react';
 import { useAddress, useContract, useMetamask, useContractWrite, useContractRead } from '@thirdweb-dev/react';
 import { ethers } from 'ethers';
 import Web3 from 'web3';
- import {abi} from './ArtBlock.json'
 
 // Initialize Web3
 
@@ -11,10 +10,9 @@ import { EditionMetadataWithOwnerOutputSchema } from '@thirdweb-dev/sdk';
 
 const StateContext = createContext();
 const web3 = new Web3(window.ethereum);
-// const contractAddress = "0x4Ba077DF5056F1fB97253d48f67ec512AEB1ede0";
 
 export const StateContextProvider = ({ children }) => {
-const { contract } = useContract('0x4Ba077DF5056F1fB97253d48f67ec512AEB1ede0');
+const { contract } = useContract('0x7469bE2F42e603469D598DfB175e098a1375b4AF');
   const { mutateAsync: CreateCommunity} = useContractWrite(contract, 'createCommunity');
   // const {  data : GetCommunities } = useContractRead(contract, 'getCommunities');
 
